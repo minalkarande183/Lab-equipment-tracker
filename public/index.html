@@ -1,0 +1,2084 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Lab Equipment Tracker</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f8;
+            color: #333;
+        }
+
+        header {
+            background: #1f2937;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #d1d5db;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 30px auto;
+        }
+
+        /* ================= DASHBOARD ================= */
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .total-number {
+            color: #2563eb;
+        }
+
+        .available-number {
+            color: #16a34a;
+        }
+
+        .maintenance-number {
+            color: #d97706;
+        }
+
+        .missing-number {
+            color: #dc2626;
+        }
+
+        /* ================= TOP ================= */
+
+        .top-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        button {
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .add-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        .add-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .search-box {
+            width: 300px;
+            padding: 11px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        /* ================= FILTERS ================= */
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        .filter-btn {
+            background: white;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .filter-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .filter-btn.active {
+            background: #1f2937;
+            color: white;
+        }
+
+        /* ================= FORM ================= */
+
+        .form-container {
+            display: none;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .form-container h2 {
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .save-btn {
+            background: #16a34a;
+            color: white;
+        }
+
+        .cancel-btn {
+            background: #6b7280;
+            color: white;
+            margin-left: 8px;
+        }
+
+        /* ================= EQUIPMENT ================= */
+
+        .equipment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .equipment-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .equipment-card h3 {
+            margin-bottom: 15px;
+            font-size: 21px;
+        }
+
+        .info {
+            margin: 8px 0;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        /* ================= STATUS ================= */
+
+        .status,
+        .condition {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .available,
+        .good {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .maintenance,
+        .needs-repair {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .missing,
+        .damaged {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* ================= BUTTONS ================= */
+
+        .card-buttons {
+            margin-top: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .edit-btn {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .delete-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        .report-btn {
+            background: #7c3aed;
+            color: white;
+        }
+
+        .history-btn {
+            background: #0891b2;
+            color: white;
+        }
+
+        .refresh-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* ================= SECTIONS ================= */
+
+        .edit-section,
+        .report-section,
+        .history-section {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .edit-section h4,
+        .report-section h4,
+        .history-section h4 {
+            margin-bottom: 12px;
+        }
+
+        .edit-section label,
+        .report-section label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .edit-section input,
+        .edit-section select,
+        .edit-section textarea,
+        .report-section input,
+        .report-section textarea {
+            width: 100%;
+            padding: 9px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .edit-section textarea,
+        .report-section textarea {
+            min-height: 70px;
+            resize: vertical;
+        }
+
+        .history-item {
+            background: white;
+            border-left: 4px solid #0891b2;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .history-item p {
+            margin: 5px 0;
+        }
+
+        /* ================= MAINTENANCE TABLE ================= */
+
+        .maintenance-section {
+            background: white;
+            margin-top: 35px;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .maintenance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .maintenance-header h2 {
+            color: #1f2937;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .maintenance-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 750px;
+        }
+
+        .maintenance-table th,
+        .maintenance-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        .maintenance-table th {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .maintenance-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .maintenance-empty {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+        }
+
+        /* ================= MESSAGES ================= */
+
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        /* ================= MOBILE ================= */
+
+        @media (max-width: 800px) {
+
+            .dashboard {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+<header>
+    <h1>🔬 Lab Equipment Tracker</h1>
+    <p>Cloud-Based Laboratory Equipment Tracking & Maintenance System</p>
+</header>
+
+
+<div class="container">
+
+    <div id="successMessage" class="success-message"></div>
+    <div id="errorMessage" class="error-message"></div>
+
+
+    <!-- ================= DASHBOARD ================= -->
+
+    <div class="dashboard">
+
+        <div class="stat-card">
+            <h3>📦 TOTAL EQUIPMENT</h3>
+            <div id="totalCount" class="stat-number total-number">0</div>
+        </div>
+
+        <div class="stat-card">
+            <h3>✅ AVAILABLE</h3>
+            <div id="availableCount" class="stat-number available-number">0</div>
+        </div>
+
+        <div class="stat-card">
+            <h3>🛠️ MAINTENANCE</h3>
+            <div id="maintenanceCount" class="stat-number maintenance-number">0</div>
+        </div>
+
+        <div class="stat-card">
+            <h3>❌ MISSING</h3>
+            <div id="missingCount" class="stat-number missing-number">0</div>
+        </div>
+
+    </div>
+
+
+    <!-- ================= TOP ================= -->
+
+    <div class="top-buttons">
+
+        <button
+            class="add-btn"
+            onclick="showForm()"
+        >
+            ➕ Add Equipment
+        </button>
+
+        <input
+            type="text"
+            id="searchInput"
+            class="search-box"
+            placeholder="🔍 Search equipment..."
+            onkeyup="searchEquipment()"
+        >
+
+    </div>
+
+
+    <!-- ================= FILTERS ================= -->
+
+    <div class="filters">
+
+        <button
+            class="filter-btn active"
+            onclick="filterByStatus('All', this)"
+        >
+            All
+        </button>
+
+        <button
+            class="filter-btn"
+            onclick="filterByStatus('Available', this)"
+        >
+            ✅ Available
+        </button>
+
+        <button
+            class="filter-btn"
+            onclick="filterByStatus('Maintenance', this)"
+        >
+            🛠️ Maintenance
+        </button>
+
+        <button
+            class="filter-btn"
+            onclick="filterByStatus('Missing', this)"
+        >
+            ❌ Missing
+        </button>
+
+    </div>
+
+
+    <!-- ================= ADD FORM ================= -->
+
+    <div
+        id="addForm"
+        class="form-container"
+    >
+
+        <h2>➕ Add New Equipment</h2>
+
+        <form onsubmit="addEquipment(event)">
+
+            <div class="form-group">
+                <label>Equipment ID</label>
+
+                <input
+                    type="text"
+                    id="equipmentId"
+                    placeholder="Example: EQ-003"
+                    required
+                >
+            </div>
+
+
+            <div class="form-group">
+                <label>Equipment Name</label>
+
+                <input
+                    type="text"
+                    id="equipmentName"
+                    placeholder="Example: Raspberry Pi"
+                    required
+                >
+            </div>
+
+
+            <div class="form-group">
+                <label>Lab Location</label>
+
+                <input
+                    type="text"
+                    id="equipmentLocation"
+                    placeholder="Example: Computer Lab"
+                    required
+                >
+            </div>
+
+
+            <div class="form-group">
+                <label>Quantity</label>
+
+                <input
+                    type="number"
+                    id="equipmentQuantity"
+                    min="1"
+                    value="1"
+                    required
+                >
+            </div>
+
+
+            <div class="form-group">
+                <label>Status</label>
+
+                <select id="equipmentStatus">
+
+                    <option value="Available">
+                        Available
+                    </option>
+
+                    <option value="Maintenance">
+                        Maintenance
+                    </option>
+
+                    <option value="Missing">
+                        Missing
+                    </option>
+
+                </select>
+            </div>
+
+
+            <div class="form-group">
+                <label>Condition</label>
+
+                <select id="equipmentCondition">
+
+                    <option value="Good">
+                        Good
+                    </option>
+
+                    <option value="Damaged">
+                        Damaged
+                    </option>
+
+                    <option value="Needs Repair">
+                        Needs Repair
+                    </option>
+
+                </select>
+            </div>
+
+
+            <div class="form-group">
+                <label>Description</label>
+
+                <textarea
+                    id="equipmentDescription"
+                    placeholder="Enter equipment description..."
+                ></textarea>
+            </div>
+
+
+            <button
+                type="submit"
+                class="save-btn"
+            >
+                💾 Add Equipment
+            </button>
+
+
+            <button
+                type="button"
+                class="cancel-btn"
+                onclick="hideForm()"
+            >
+                Cancel
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- ================= EQUIPMENT CARDS ================= -->
+
+    <div
+        id="equipmentContainer"
+        class="equipment-grid"
+    >
+
+        <div class="no-data">
+            Loading equipment...
+        </div>
+
+    </div>
+
+
+    <!-- ================= MAINTENANCE RECORDS ================= -->
+
+    <div class="maintenance-section">
+
+        <div class="maintenance-header">
+
+            <h2>🛠️ Maintenance Records</h2>
+
+            <button
+                class="refresh-btn"
+                onclick="loadMaintenanceRecords()"
+            >
+                🔄 Refresh Records
+            </button>
+
+        </div>
+
+
+        <div
+            id="maintenanceContainer"
+            class="table-wrapper"
+        >
+
+            <div class="maintenance-empty">
+                Loading maintenance records...
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    let allEquipment = [];
+    let currentFilter = "All";
+
+
+    // ==========================================
+    // SHOW / HIDE ADD FORM
+    // ==========================================
+
+    function showForm() {
+
+        document.getElementById(
+            "addForm"
+        ).style.display = "block";
+    }
+
+
+    function hideForm() {
+
+        document.getElementById(
+            "addForm"
+        ).style.display = "none";
+    }
+
+
+    // ==========================================
+    // DASHBOARD
+    // ==========================================
+
+    function updateDashboard(equipment) {
+
+        document.getElementById(
+            "totalCount"
+        ).textContent = equipment.length;
+
+
+        document.getElementById(
+            "availableCount"
+        ).textContent = equipment.filter(
+            item => item.status === "Available"
+        ).length;
+
+
+        document.getElementById(
+            "maintenanceCount"
+        ).textContent = equipment.filter(
+            item => item.status === "Maintenance"
+        ).length;
+
+
+        document.getElementById(
+            "missingCount"
+        ).textContent = equipment.filter(
+            item => item.status === "Missing"
+        ).length;
+    }
+
+
+    // ==========================================
+    // SEARCH + FILTER
+    // ==========================================
+
+    function applyFilters() {
+
+        const search =
+            document.getElementById(
+                "searchInput"
+            ).value
+                .toLowerCase()
+                .trim();
+
+
+        const filtered =
+            allEquipment.filter(item => {
+
+                const matchesStatus =
+                    currentFilter === "All" ||
+                    item.status === currentFilter;
+
+
+                const matchesSearch =
+
+                    item.equipmentId
+                        .toLowerCase()
+                        .includes(search)
+
+                    ||
+
+                    item.name
+                        .toLowerCase()
+                        .includes(search)
+
+                    ||
+
+                    item.location
+                        .toLowerCase()
+                        .includes(search)
+
+                    ||
+
+                    item.status
+                        .toLowerCase()
+                        .includes(search)
+
+                    ||
+
+                    item.condition
+                        .toLowerCase()
+                        .includes(search)
+
+                    ||
+
+                    (item.description || "")
+                        .toLowerCase()
+                        .includes(search);
+
+
+                return (
+                    matchesStatus &&
+                    matchesSearch
+                );
+            });
+
+
+        displayEquipment(filtered);
+    }
+
+
+    function searchEquipment() {
+
+        applyFilters();
+    }
+
+
+    function filterByStatus(status, button) {
+
+        currentFilter = status;
+
+
+        document.querySelectorAll(
+            ".filter-btn"
+        ).forEach(btn => {
+
+            btn.classList.remove(
+                "active"
+            );
+
+        });
+
+
+        button.classList.add(
+            "active"
+        );
+
+
+        applyFilters();
+    }
+
+
+    // ==========================================
+    // LOAD EQUIPMENT
+    // ==========================================
+
+    async function loadEquipment() {
+
+        try {
+
+            const response =
+                await fetch(
+                    "/equipment"
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Failed to load equipment"
+                );
+            }
+
+
+            allEquipment =
+                await response.json();
+
+
+            updateDashboard(
+                allEquipment
+            );
+
+
+            applyFilters();
+
+
+        } catch (error) {
+
+            console.error(
+                error
+            );
+
+
+            document.getElementById(
+                "equipmentContainer"
+            ).innerHTML = `
+                <div class="no-data">
+                    ❌ Unable to load equipment.
+                </div>
+            `;
+        }
+    }
+
+
+    // ==========================================
+    // LOAD MAINTENANCE RECORDS
+    // ==========================================
+
+    async function loadMaintenanceRecords() {
+
+        const container =
+            document.getElementById(
+                "maintenanceContainer"
+            );
+
+
+        container.innerHTML = `
+            <div class="maintenance-empty">
+                Loading maintenance records...
+            </div>
+        `;
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/maintenance"
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Failed to load maintenance records"
+                );
+            }
+
+
+            const records =
+                await response.json();
+
+
+            if (records.length === 0) {
+
+                container.innerHTML = `
+                    <div class="maintenance-empty">
+                        ✅ No maintenance records available.
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            container.innerHTML = `
+
+                <table class="maintenance-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Equipment ID
+                            </th>
+
+                            <th>
+                                Equipment
+                            </th>
+
+                            <th>
+                                Location
+                            </th>
+
+                            <th>
+                                Issue
+                            </th>
+
+                            <th>
+                                Action Taken
+                            </th>
+
+                            <th>
+                                Date
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        ${records.map(record => `
+
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        ${record.equipmentId}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    ${record.equipmentName}
+                                </td>
+
+                                <td>
+                                    ${record.location}
+                                </td>
+
+                                <td>
+                                    ${record.issue}
+                                </td>
+
+                                <td>
+                                    ${record.action}
+                                </td>
+
+                                <td>
+                                    ${formatDate(record.date)}
+                                </td>
+
+                            </tr>
+
+                        `).join("")}
+
+                    </tbody>
+
+                </table>
+            `;
+
+
+        } catch (error) {
+
+            console.error(
+                error
+            );
+
+
+            container.innerHTML = `
+                <div class="maintenance-empty">
+                    ❌ Unable to load maintenance records.
+                </div>
+            `;
+        }
+    }
+
+
+    // ==========================================
+    // DISPLAY EQUIPMENT
+    // ==========================================
+
+    function displayEquipment(equipment) {
+
+        const container =
+            document.getElementById(
+                "equipmentContainer"
+            );
+
+
+        if (equipment.length === 0) {
+
+            container.innerHTML = `
+                <div class="no-data">
+                    No equipment found.
+                </div>
+            `;
+
+            return;
+        }
+
+
+        container.innerHTML =
+            equipment.map(item => {
+
+                const statusClass =
+                    item.status.toLowerCase();
+
+
+                const conditionClass =
+                    item.condition
+                        .toLowerCase()
+                        .replace(
+                            " ",
+                            "-"
+                        );
+
+
+                const history =
+                    item.maintenanceHistory ||
+                    [];
+
+
+                return `
+
+                    <div class="equipment-card">
+
+                        <h3>
+                            🔧 ${item.name}
+                        </h3>
+
+
+                        <div class="info">
+
+                            <span class="label">
+                                Equipment ID:
+                            </span>
+
+                            ${item.equipmentId}
+
+                        </div>
+
+
+                        <div class="info">
+
+                            <span class="label">
+                                Lab Location:
+                            </span>
+
+                            ${item.location}
+
+                        </div>
+
+
+                        <div class="info">
+
+                            <span class="label">
+                                Quantity:
+                            </span>
+
+                            ${item.quantity}
+
+                        </div>
+
+
+                        <div class="info">
+
+                            <span class="label">
+                                Status:
+                            </span>
+
+                            <br>
+
+                            <span class="status ${statusClass}">
+                                ${item.status}
+                            </span>
+
+                        </div>
+
+
+                        <div class="info">
+
+                            <span class="label">
+                                Condition:
+                            </span>
+
+                            <br>
+
+                            <span class="condition ${conditionClass}">
+                                ${item.condition}
+                            </span>
+
+                        </div>
+
+
+                        <div class="info">
+
+                            <span class="label">
+                                Description:
+                            </span>
+
+                            <br>
+
+                            ${item.description ||
+                                "No description"}
+
+                        </div>
+
+
+                        <!-- BUTTONS -->
+
+                        <div class="card-buttons">
+
+                            <button
+                                class="edit-btn"
+                                onclick="showEditForm('${item._id}')"
+                            >
+                                ✏️ Edit
+                            </button>
+
+
+                            <button
+                                class="delete-btn"
+                                onclick="deleteEquipment('${item._id}')"
+                            >
+                                🗑️ Delete
+                            </button>
+
+
+                            <button
+                                class="report-btn"
+                                onclick="showReportForm('${item._id}')"
+                            >
+                                🚨 Report Problem
+                            </button>
+
+
+                            <button
+                                class="history-btn"
+                                onclick="toggleHistory('${item._id}')"
+                            >
+                                🛠️ History (${history.length})
+                            </button>
+
+                        </div>
+
+
+                        <!-- EDIT -->
+
+                        <div
+                            id="edit-${item._id}"
+                            class="edit-section"
+                        >
+
+                            <h4>
+                                ✏️ Edit Equipment
+                            </h4>
+
+
+                            <label>
+                                Equipment ID
+                            </label>
+
+                            <input
+                                type="text"
+                                id="edit-id-${item._id}"
+                                value="${item.equipmentId}"
+                            >
+
+
+                            <label>
+                                Equipment Name
+                            </label>
+
+                            <input
+                                type="text"
+                                id="edit-name-${item._id}"
+                                value="${item.name}"
+                            >
+
+
+                            <label>
+                                Lab Location
+                            </label>
+
+                            <input
+                                type="text"
+                                id="edit-location-${item._id}"
+                                value="${item.location}"
+                            >
+
+
+                            <label>
+                                Quantity
+                            </label>
+
+                            <input
+                                type="number"
+                                id="edit-quantity-${item._id}"
+                                value="${item.quantity}"
+                                min="1"
+                            >
+
+
+                            <label>
+                                Status
+                            </label>
+
+                            <select
+                                id="edit-status-${item._id}"
+                            >
+
+                                <option
+                                    value="Available"
+                                    ${item.status === "Available"
+                                        ? "selected"
+                                        : ""}
+                                >
+                                    Available
+                                </option>
+
+                                <option
+                                    value="Maintenance"
+                                    ${item.status === "Maintenance"
+                                        ? "selected"
+                                        : ""}
+                                >
+                                    Maintenance
+                                </option>
+
+                                <option
+                                    value="Missing"
+                                    ${item.status === "Missing"
+                                        ? "selected"
+                                        : ""}
+                                >
+                                    Missing
+                                </option>
+
+                            </select>
+
+
+                            <label>
+                                Condition
+                            </label>
+
+                            <select
+                                id="edit-condition-${item._id}"
+                            >
+
+                                <option
+                                    value="Good"
+                                    ${item.condition === "Good"
+                                        ? "selected"
+                                        : ""}
+                                >
+                                    Good
+                                </option>
+
+                                <option
+                                    value="Damaged"
+                                    ${item.condition === "Damaged"
+                                        ? "selected"
+                                        : ""}
+                                >
+                                    Damaged
+                                </option>
+
+                                <option
+                                    value="Needs Repair"
+                                    ${item.condition === "Needs Repair"
+                                        ? "selected"
+                                        : ""}
+                                >
+                                    Needs Repair
+                                </option>
+
+                            </select>
+
+
+                            <label>
+                                Description
+                            </label>
+
+                            <textarea
+                                id="edit-description-${item._id}"
+                            >${item.description || ""}</textarea>
+
+
+                            <button
+                                class="save-btn"
+                                onclick="saveEdit('${item._id}')"
+                            >
+                                💾 Save Changes
+                            </button>
+
+
+                            <button
+                                class="cancel-btn"
+                                onclick="cancelEdit('${item._id}')"
+                            >
+                                Cancel
+                            </button>
+
+                        </div>
+
+
+                        <!-- REPORT -->
+
+                        <div
+                            id="report-${item._id}"
+                            class="report-section"
+                        >
+
+                            <h4>
+                                🚨 Report a Problem
+                            </h4>
+
+
+                            <label>
+                                Problem / Issue
+                            </label>
+
+                            <input
+                                type="text"
+                                id="issue-${item._id}"
+                                placeholder="Example: Display damaged"
+                            >
+
+
+                            <label>
+                                Action Taken
+                            </label>
+
+                            <textarea
+                                id="action-${item._id}"
+                                placeholder="Example: Sent for repair"
+                            ></textarea>
+
+
+                            <button
+                                class="report-btn"
+                                onclick="reportProblem('${item._id}')"
+                            >
+                                🚨 Submit Report
+                            </button>
+
+
+                            <button
+                                class="cancel-btn"
+                                onclick="cancelReport('${item._id}')"
+                            >
+                                Cancel
+                            </button>
+
+                        </div>
+
+
+                        <!-- HISTORY -->
+
+                        <div
+                            id="history-${item._id}"
+                            class="history-section"
+                        >
+
+                            <h4>
+                                🛠️ Maintenance History
+                            </h4>
+
+
+                            ${
+                                history.length === 0
+
+                                ?
+
+                                `<p>
+                                    No maintenance records yet.
+                                </p>`
+
+                                :
+
+                                history
+                                    .slice()
+                                    .reverse()
+                                    .map(record => `
+
+                                        <div class="history-item">
+
+                                            <p>
+                                                📅
+                                                <strong>
+                                                    ${formatDate(record.date)}
+                                                </strong>
+                                            </p>
+
+                                            <p>
+                                                🚨
+                                                <strong>
+                                                    Issue:
+                                                </strong>
+
+                                                ${record.issue ||
+                                                    "Not specified"}
+                                            </p>
+
+                                            <p>
+                                                🔧
+                                                <strong>
+                                                    Action:
+                                                </strong>
+
+                                                ${record.action ||
+                                                    "Not specified"}
+                                            </p>
+
+                                        </div>
+
+                                    `)
+                                    .join("")
+                            }
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            }).join("");
+    }
+
+
+    // ==========================================
+    // EDIT
+    // ==========================================
+
+    function showEditForm(id) {
+
+        const section =
+            document.getElementById(
+                `edit-${id}`
+            );
+
+
+        section.style.display =
+            section.style.display === "block"
+                ? "none"
+                : "block";
+    }
+
+
+    function cancelEdit(id) {
+
+        document.getElementById(
+            `edit-${id}`
+        ).style.display = "none";
+    }
+
+
+    async function saveEdit(id) {
+
+        const equipmentId =
+            document.getElementById(
+                `edit-id-${id}`
+            ).value.trim();
+
+
+        const name =
+            document.getElementById(
+                `edit-name-${id}`
+            ).value.trim();
+
+
+        const location =
+            document.getElementById(
+                `edit-location-${id}`
+            ).value.trim();
+
+
+        const quantity =
+            Number(
+                document.getElementById(
+                    `edit-quantity-${id}`
+                ).value
+            );
+
+
+        const status =
+            document.getElementById(
+                `edit-status-${id}`
+            ).value;
+
+
+        const condition =
+            document.getElementById(
+                `edit-condition-${id}`
+            ).value;
+
+
+        const description =
+            document.getElementById(
+                `edit-description-${id}`
+            ).value.trim();
+
+
+        if (
+            !equipmentId ||
+            !name ||
+            !location ||
+            quantity < 1
+        ) {
+
+            showError(
+                "Please enter valid Equipment ID, name, location and quantity."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/equipment/${id}`,
+                    {
+                        method: "PUT",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+
+                            equipmentId,
+
+                            name,
+
+                            location,
+
+                            quantity,
+
+                            status,
+
+                            condition,
+
+                            description
+
+                        })
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.error ||
+                    "Update failed"
+                );
+            }
+
+
+            showSuccess(
+                "Equipment updated successfully!"
+            );
+
+
+            await loadEquipment();
+
+        } catch (error) {
+
+            showError(
+                error.message
+            );
+        }
+    }
+
+
+    // ==========================================
+    // REPORT PROBLEM
+    // ==========================================
+
+    function showReportForm(id) {
+
+        const section =
+            document.getElementById(
+                `report-${id}`
+            );
+
+
+        section.style.display =
+            section.style.display === "block"
+                ? "none"
+                : "block";
+    }
+
+
+    function cancelReport(id) {
+
+        document.getElementById(
+            `report-${id}`
+        ).style.display = "none";
+    }
+
+
+    async function reportProblem(id) {
+
+        const issue =
+            document.getElementById(
+                `issue-${id}`
+            ).value.trim();
+
+
+        const action =
+            document.getElementById(
+                `action-${id}`
+            ).value.trim();
+
+
+        if (!issue || !action) {
+
+            showError(
+                "Please enter both the problem and action taken."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/equipment/${id}/maintenance`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            issue,
+                            action
+                        })
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.error ||
+                    "Failed to report problem"
+                );
+            }
+
+
+            showSuccess(
+                "Maintenance report added successfully!"
+            );
+
+
+            await loadEquipment();
+
+            await loadMaintenanceRecords();
+
+        } catch (error) {
+
+            showError(
+                error.message
+            );
+        }
+    }
+
+
+    // ==========================================
+    // HISTORY
+    // ==========================================
+
+    function toggleHistory(id) {
+
+        const section =
+            document.getElementById(
+                `history-${id}`
+            );
+
+
+        section.style.display =
+            section.style.display === "block"
+                ? "none"
+                : "block";
+    }
+
+
+    // ==========================================
+    // DELETE
+    // ==========================================
+
+    async function deleteEquipment(id) {
+
+        const confirmDelete =
+            confirm(
+                "Are you sure you want to delete this equipment?"
+            );
+
+
+        if (!confirmDelete) {
+            return;
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/equipment/${id}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.error ||
+                    "Delete failed"
+                );
+            }
+
+
+            showSuccess(
+                "Equipment deleted successfully!"
+            );
+
+
+            await loadEquipment();
+
+            await loadMaintenanceRecords();
+
+        } catch (error) {
+
+            showError(
+                error.message
+            );
+        }
+    }
+
+
+    // ==========================================
+    // ADD EQUIPMENT
+    // ==========================================
+
+    async function addEquipment(event) {
+
+        event.preventDefault();
+
+
+        const equipmentId =
+            document.getElementById(
+                "equipmentId"
+            ).value.trim();
+
+
+        const name =
+            document.getElementById(
+                "equipmentName"
+            ).value.trim();
+
+
+        const location =
+            document.getElementById(
+                "equipmentLocation"
+            ).value.trim();
+
+
+        const quantity =
+            Number(
+                document.getElementById(
+                    "equipmentQuantity"
+                ).value
+            );
+
+
+        const status =
+            document.getElementById(
+                "equipmentStatus"
+            ).value;
+
+
+        const condition =
+            document.getElementById(
+                "equipmentCondition"
+            ).value;
+
+
+        const description =
+            document.getElementById(
+                "equipmentDescription"
+            ).value.trim();
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/equipment",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+
+                            equipmentId,
+
+                            name,
+
+                            location,
+
+                            quantity,
+
+                            status,
+
+                            condition,
+
+                            description
+
+                        })
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.error ||
+                    "Failed to add equipment"
+                );
+            }
+
+
+            showSuccess(
+                "Equipment added successfully!"
+            );
+
+
+            document.querySelector(
+                "#addForm form"
+            ).reset();
+
+
+            hideForm();
+
+
+            await loadEquipment();
+
+            await loadMaintenanceRecords();
+
+        } catch (error) {
+
+            showError(
+                error.message
+            );
+        }
+    }
+
+
+    // ==========================================
+    // DATE
+    // ==========================================
+
+    function formatDate(date) {
+
+        if (!date) {
+            return "Unknown date";
+        }
+
+
+        return new Date(date)
+            .toLocaleDateString(
+                "en-IN",
+                {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric"
+                }
+            );
+    }
+
+
+    // ==========================================
+    // MESSAGES
+    // ==========================================
+
+    function showSuccess(message) {
+
+        const element =
+            document.getElementById(
+                "successMessage"
+            );
+
+
+        element.textContent =
+            message;
+
+
+        element.style.display =
+            "block";
+
+
+        setTimeout(() => {
+
+            element.style.display =
+                "none";
+
+        }, 3000);
+    }
+
+
+    function showError(message) {
+
+        const element =
+            document.getElementById(
+                "errorMessage"
+            );
+
+
+        element.textContent =
+            "❌ " + message;
+
+
+        element.style.display =
+            "block";
+
+
+        setTimeout(() => {
+
+            element.style.display =
+                "none";
+
+        }, 4000);
+    }
+
+
+    // ==========================================
+    // START
+    // ==========================================
+
+    loadEquipment();
+
+    loadMaintenanceRecords();
+
+</script>
+
+</body>
+</html>
